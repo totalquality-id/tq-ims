@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'reac
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Bell, LayoutGrid, Menu, PanelLeftClose, PanelLeftOpen, Search, X } from 'lucide-react';
+import { Bell, LayoutGrid, Menu, PanelLeftClose, PanelLeftOpen, Search, Tags, X } from 'lucide-react';
 import { MODULES, moduleById } from '@/lib/modules';
 import { DATASETS, drillHref } from '@/lib/datasets';
 import { NOTIFICATIONS } from '@/lib/activity';
@@ -107,6 +107,12 @@ function Sidebar({ moduleId, datasetKey, open, onClose }) {
           })}
         </div>
       </nav>
+      <div className="sidebar-footer">
+        <Link href="/pricing" className={`nav-item ${moduleId === 'pricing' ? 'active' : ''}`} aria-current={moduleId === 'pricing' ? 'page' : undefined}>
+          <Tags className="nav-icon" aria-hidden />
+          <span className="nav-label">Paket & Harga</span>
+        </Link>
+      </div>
     </aside>
   );
 }
