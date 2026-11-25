@@ -6,7 +6,8 @@ import {
 } from './data/core';
 import { PESTEL_FACTORS, quadrantOf } from './data/pestel';
 import { PERSPECTIVES, achievementOf, kpiStatus } from './data/executive';
-import { levelOf, okrStatus, OBJECTIVES } from './data/risk';
+import { IPR, assessment, ratingOptions, statusByType } from './ipr';
+import { okrStatus, OBJECTIVES } from './data/risk';
 import { SKILLS, TARGETS, PROGRAMS, CERTS } from './data/skill';
 import { DOC_CATEGORIES, DEPT_CODE } from './data/documents';
 import { AUDIT_TYPES, AUDITORS, CUSTOMERS } from './data/audit';
@@ -183,34 +184,39 @@ export const FORMS = {
   },
   risks: {
     fields: [
-      { key: 'deskripsi', label: 'Deskripsi', required: true, span: 'full' },
-      { key: 'jenis', label: 'Jenis', type: 'select', options: ['Risiko', 'Peluang'], default: 'Risiko' },
-      { key: 'kategori', label: 'Kategori', type: 'select', options: (get) => uniq(get('risks'), 'kategori'), required: true },
-      { key: 'departemen', label: 'Departemen', type: 'select', options: DEPARTMENTS, required: true },
-      { key: 'sumber', label: 'Sumber', type: 'select', options: ['PESTEL', 'Proses', 'Audit', 'Stakeholder'], default: 'Proses' },
-      { key: 'kemungkinan', label: 'Kemungkinan (1-5)', type: 'number', min: 1, max: 5, default: 3 },
-      { key: 'dampak', label: 'Dampak (1-5)', type: 'number', min: 1, max: 5, default: 3 },
-      { key: 'residualKemungkinan', label: 'Kemungkinan residual', type: 'number', min: 1, max: 5 },
-      { key: 'residualDampak', label: 'Dampak residual', type: 'number', min: 1, max: 5 },
-      { key: 'status', label: 'Status', type: 'select', options: ['Open', 'Mitigasi', 'Monitoring', 'Closed', 'Rencana', 'On Progress', 'Terealisasi'], default: 'Open' },
-      { key: 'pic', label: 'PIC', type: 'select', options: PEOPLE, required: true },
-      { key: 'target', label: 'Target', type: 'date' },
-      { key: 'pengendalian', label: 'Pengendalian / rencana tindakan', type: 'textarea', span: 'full' },
+      { key:'jenis', label:'Jenis penilaian', type:'select', options:['Risiko','Peluang'], default:'Risiko', required:true },
+      { key:'deskripsi', label:'Peristiwa atau kesempatan', required:true, span:'full' },
+      { key:'kategori', label:'Kategori', type:'select', options:get=>uniq(get('risks'),'kategori'), required:true },
+      { key:'departemen', label:'Departemen', type:'select', options:DEPARTMENTS, required:true },
+      { key:'sumber', label:'Sumber identifikasi', type:'select', options:['PESTEL','Proses','Audit','Stakeholder'], default:'Proses' },
+      { key:'ref', label:'Isu PESTEL asal', type:'select', options:get=>get('pestel').map(r=>[r.id,r.id+' · '+r.isu]) },
+      { key:'kemungkinan', type:'select', required:true, span:'full' },
+      { key:'dampak', type:'select', required:true, span:'full' },
+      { key:'akibat', type:'textarea', required:true, span:'full' },
+      { key:'pengendalian', type:'textarea', required:true, span:'full' },
+      { key:'pic', label:'PIC tindakan', type:'select', options:PEOPLE, required:true },
+      { key:'target', label:'Target pelaksanaan', type:'date' },
+      { key:'status', label:'Status tindakan', type:'select', default:'Open', required:true },
+      { key:'residualKemungkinan', label:'Kemungkinan setelah pengendalian (opsional)', type:'select', options:ratingOptions('Risiko'), span:'full' },
+      { key:'residualDampak', label:'Keparahan setelah pengendalian (opsional)', type:'select', options:ratingOptions('dampak'), span:'full' },
     ],
-    build: (v, { get, existing }) => {
-      const L = num(v.kemungkinan, 3);
-      const I = num(v.dampak, 3);
-      const isRisk = v.jenis === 'Risiko';
-      const rL = isRisk ? num(v.residualKemungkinan, L) : null;
-      const rI = isRisk ? num(v.residualDampak, I) : null;
-      const tanggal = existing?.tanggal ?? TODAY;
+    initial: row=>({
+      actionRefs:row.actionRefs || [],
+      ...(row.metode!==IPR ? {kemungkinan:'',dampak:'',residualKemungkinan:'',residualDampak:''}:{}),
+      status:statusByType[row.jenis]?.includes(row.status)? row.status : statusByType[row.jenis]?.[0],
+    }),
+    build:(v,{get,existing})=>{
+      const risk=v.jenis==='Risiko';
+      const initial=assessment(v.kemungkinan,v.dampak);
+      const residual=risk?assessment(v.residualKemungkinan,v.residualDampak):null;
+      const tanggal=existing?.tanggal || TODAY;
       return {
-        ...existing,
-        id: existing?.id ?? nextId(get('risks'), isRisk ? 'RSK-' : 'OPP-'),
-        jenis: v.jenis, deskripsi: v.deskripsi, kategori: v.kategori, departemen: v.departemen, sumber: v.sumber, ref: existing?.ref ?? null,
-        kemungkinan: L, dampak: I, skor: L * I, level: levelOf(L * I),
-        residualKemungkinan: rL, residualDampak: rI, residualSkor: isRisk ? rL * rI : null, residualLevel: isRisk ? levelOf(rL * rI) : null,
-        pengendalian: v.pengendalian, status: v.status, pic: v.pic, tanggal, bulan: monthOf(tanggal), target: v.target || null,
+        ...existing,id:existing?.id ?? nextId(get('risks'),risk?'RSK-':'OPP-'),jenis:v.jenis,metode:IPR,
+        deskripsi:v.deskripsi.trim(),kategori:v.kategori,departemen:v.departemen,sumber:v.sumber,ref:v.sumber==='PESTEL'?v.ref || null:null,
+        kemungkinan:+v.kemungkinan,dampak:+v.dampak,skor:initial.score,level:initial.level,akibat:v.akibat.trim(),
+        residualKemungkinan:residual?+v.residualKemungkinan:null,residualDampak:residual?+v.residualDampak:null,
+        residualSkor:residual?.score ?? null,residualLevel:residual?.level ?? null,
+        pengendalian:v.pengendalian.trim(),actionRefs:v.actionRefs || [],status:v.status,pic:v.pic,target:v.target || null,tanggal,bulan:monthOf(tanggal),
       };
     },
   },

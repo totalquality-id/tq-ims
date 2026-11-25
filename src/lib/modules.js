@@ -38,7 +38,7 @@ export const MODULES = [
     clause: 'Klausul 6',
     clauseDetail: '6.1 Risiko & peluang, 6.2 Sasaran mutu & perencanaannya',
     tagline: 'Anticipate Risk, Align Objectives',
-    description: 'Register risiko & peluang dengan heatmap 5x5, residual risk, dan pemantauan sasaran mutu berbasis OKR.',
+    description: 'Register risiko & peluang dengan matriks IPR 3×3, residual risk, dan pemantauan sasaran mutu berbasis OKR.',
     pdca: 'Plan',
     datasets: ['risks', 'okr'],
   },

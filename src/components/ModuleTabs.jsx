@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { LayoutDashboard } from 'lucide-react';
+import { workspaces, moduleWork } from '@/lib/workspace';
 import { moduleById } from '@/lib/modules';
 import { SUBMODULES } from '@/lib/submodules';
 import { drillHref } from '@/lib/datasets';
@@ -23,6 +24,7 @@ export default function ModuleTabs({ moduleId, current }) {
           </Link>
         );
       })}
+      {(moduleWork[moduleId] || []).map(slug => <Link key={slug} href={'/fitur/'+slug}>{workspaces[slug][2]}</Link>)}
     </nav>
   );
 }

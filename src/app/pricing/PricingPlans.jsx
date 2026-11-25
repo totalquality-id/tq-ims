@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { planEntry } from '@/lib/workspace';
 import { useEffect, useState } from 'react';
 import { ArrowRight, ClipboardList, ChartNoAxesCombined, Network, Check } from 'lucide-react';
 
@@ -68,6 +70,7 @@ export default function PricingPlans() {
               <button type="button" className="btn pricing-discuss" onClick={() => setRequest({ plan: name })}>
                 Diskusikan {name}<ArrowRight size={16} aria-hidden />
               </button>
+              <Link href={'/fitur/'+planEntry[name]} className="btn-ghost">Coba fitur {name}<ArrowRight size={14} /></Link>
               <p className="pricing-setup">* Setup satu kali <strong>{setup}</strong></p>
             </footer>
           </article>

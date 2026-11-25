@@ -19,14 +19,14 @@ const certSoon = certifications.filter((c) => c.status === 'Akan Kadaluarsa').so
 const openMajor = findings.filter((f) => f.status !== 'Tertutup' && (f.kategori === 'Major' || f.prioritas === 'High'));
 const complaints = feedback.filter((f) => f.tipe === 'Komplain');
 const nextAudit = audits.filter((a) => a.status === 'Terjadwal').sort((a, b) => a.tanggal.localeCompare(b.tanggal))[0];
-const extremeRisk = risks.filter((r) => r.level === 'Extreme' && r.status !== 'Closed');
+const extremeRisk = risks.filter((r) => r.jenis==='Risiko' && r.level==='High' && r.status !== 'Closed');
 const krAtRisk = okrs.filter((k) => k.status === 'At Risk' || k.status === 'Belum Tercapai');
 
 export const NOTIFICATIONS = [
   overdue[0] && { id: 'n1', module: 'capa', tone: 'red', title: `${overdue[0].id} melewati target`, body: overdue[0].masalah, time: `Target ${fmtDate(overdue[0].target)}`, href: drillHref('capa', { id: overdue[0].id }, { open: overdue[0].id }) },
   openMajor[0] && { id: 'n2', module: 'audit', tone: 'peach', title: `Temuan ${openMajor[0].kategori.toLowerCase()} belum ditutup`, body: `${openMajor[0].deskripsi}, ${openMajor[0].area}`, time: ago(openMajor[0].tanggal), href: drillHref('findings', { id: openMajor[0].id }, { open: openMajor[0].id }) },
   complaints[0] && { id: 'n3', module: 'audit', tone: 'rose', title: `Komplain dari ${complaints[0].pelanggan}`, body: complaints[0].komentar, time: ago(complaints[0].tanggal), href: drillHref('feedback', { id: complaints[0].id }, { open: complaints[0].id }) },
-  extremeRisk[0] && { id: 'n4', module: 'risk', tone: 'red', title: 'Risiko extreme perlu mitigasi', body: extremeRisk[0].deskripsi, time: `Skor ${extremeRisk[0].skor}`, href: drillHref('risks', { level: 'Extreme' }) },
+  extremeRisk[0] && { id: 'n4', module: 'risk', tone: 'red', title: 'Risiko High perlu mitigasi', body: extremeRisk[0].deskripsi, time: `Skor ${extremeRisk[0].skor}`, href: drillHref('risks', { jenis:'Risiko',metode:'IPR 3×3',level:'High' }) },
   expiredDocs.length && { id: 'n5', module: 'edoc', tone: 'sun', title: `${expiredDocs.length} dokumen melewati masa review`, body: expiredDocs.slice(0, 2).map((d) => d.id).join(', ') + (expiredDocs.length > 2 ? ', ' : ''), time: 'Perlu ditinjau', href: drillHref('documents', { status: 'Kadaluarsa' }) },
   certSoon.length && { id: 'n6', module: 'skill', tone: 'lilac', title: `${certSoon.length} sertifikat akan kadaluarsa`, body: `${certSoon[0].sertifikasi}, ${certSoon[0].karyawan}`, time: `${certSoon[0].sisaHari} hari lagi`, href: drillHref('certifications', { status: 'Akan Kadaluarsa' }) },
   krAtRisk.length && { id: 'n7', module: 'risk', tone: 'sun', title: `${krAtRisk.length} key result belum on track`, body: krAtRisk[0].keyResult, time: 'Review bulanan', href: drillHref('okr', { status: ['At Risk', 'Belum Tercapai'] }) },

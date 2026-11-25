@@ -1,0 +1,16 @@
+.workbench { margin-top: 18px; }
+.workbench .card-body { gap: 14px; }
+.work-fields { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit,minmax(min(210px,100%),1fr)); align-items: end; }
+.work-fields label { min-width: 0; }
+.work-fields input, .work-fields select, .work-fields textarea { width:100%; }
+.work-fields textarea { min-height:76px; resize: vertical; }
+.work-wide { grid-column: 1 / -1; }
+.work-actions, .work-related { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.work-related { margin-top:20px; color:var(--gray-600); font-size:13px; }
+.workbench .work-table { max-height:390px; overflow:auto; }
+.workbench td { white-space:normal; overflow-wrap:anywhere; }
+.workbench .work-table th { position:sticky; top:0; z-index:1; background:var(--gray-50); }
+.work-report { display:grid; gap:8px; }
+.work-report strong { color:var(--brand-800); }
+.work-notice { color:var(--brand-800); background:var(--brand-50); padding:9px 12px; border-radius:var(--radius-md); }
+.workbench .form-input:disabled { background:var(--gray-50); }

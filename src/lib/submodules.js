@@ -56,10 +56,10 @@ export const SUBMODULES = {
     ],
   },
   risks: {
-    short: 'Register Risiko', icon: ShieldAlert,
+    short: 'Register Risiko & Peluang', icon: ShieldAlert,
     charts: [
-      { id: 'heatmap', title: 'Heatmap risiko aktif', type: 'heatmap' },
-      { id: 'level', title: 'Level risiko', type: 'donut', field: 'level', order: ['Extreme', 'High', 'Medium', 'Low'] },
+      { id:'heatmap', title:'Matriks IPR risiko', type:'heatmap', kind:'Risiko' },
+      { id:'peluang', title:'Matriks IPR peluang', type:'heatmap', kind:'Peluang' },
     ],
   },
   okr: {

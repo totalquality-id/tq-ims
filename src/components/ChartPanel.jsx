@@ -8,7 +8,7 @@ import { Card, Gauge, Badge } from './ui';
 import { toneOf } from '@/lib/tones';
 import { LAST6, MONTHS, avgBy, countBy, monthShort } from '@/lib/data/core';
 import { PERSPECTIVES, scoreLabel } from '@/lib/data/executive';
-import { levelOf } from '@/lib/data/risk';
+import { IPR, iprLevel } from '@/lib/ipr';
 
 const TONE_HEX = { success: '#2f8a5f', warning: '#d4a73a', danger: '#c2453d', info: '#3b5bdb' };
 export const colorFor = (value, i) => TONE_HEX[toneOf(value)] ?? SERIES[i % SERIES.length];
@@ -19,7 +19,8 @@ const TREND_KPIS = [
   { kode: 'CUS-02', label: 'On-time delivery' },
   { kode: 'PRC-01', label: 'RFT sewing' },
 ];
-const heatClass = (s) => (s >= 20 ? 'heat-ext' : s >= 10 ? 'heat-high' : s >= 5 ? 'heat-med' : 'heat-low');
+const heatClass = (s) => ({ Low:'heat-low', Moderate:'heat-med', High:'heat-ext' })[iprLevel(s)];
+
 
 // Kolom URL yang "dimiliki" grafik: dikecualikan saat menghitung grafik itu
 // sendiri, supaya pilihan lain tetap terlihat (cross-filter).
@@ -90,30 +91,24 @@ export function ChartBody({ cfg, rows, selected = {}, onPick, height = 210 }) {
   }
 
   if (cfg.type === 'heatmap') {
-    const active = rows.filter((r) => r.jenis === 'Risiko' && r.status !== 'Closed');
-    const selL = sel('kemungkinan');
-    const selI = sel('dampak');
-    return (
-      <div className="heatmap">
-        {[5, 4, 3, 2, 1].map((l) => (
-          <div key={l} style={{ display: 'contents' }}>
-            <span className="axis">{l}</span>
-            {[1, 2, 3, 4, 5].map((i) => {
-              const n = active.filter((r) => r.kemungkinan === l && r.dampak === i).length;
-              const on = selL.includes(String(l)) && selI.includes(String(i));
-              const label = `Kemungkinan ${l}, dampak ${i} (${levelOf(l * i)})`;
-              return n ? (
-                <button key={i} type="button" className={`heat-cell ${heatClass(l * i)} ${on ? 'on' : ''}`} title={`${label}: ${n} risiko`} onClick={() => pick({ kemungkinan: String(l), dampak: String(i) })}>{n}</button>
-              ) : <span key={i} className={`heat-cell empty ${heatClass(l * i)}`} title={label} />;
-            })}
-          </div>
-        ))}
-        <span />
-        {[1, 2, 3, 4, 5].map((i) => <span key={i} className="axis">{i}</span>)}
-        <span />
-        <span className="heat-caption">Kemungkinan (baris), dampak (kolom)</span>
-      </div>
-    );
+    const kind=cfg.kind;
+    const active=rows.filter(r=>r.metode===IPR && r.jenis===kind);
+    const axis=kind==='Risiko'?'Frekuensi kejadian':'Kemudahan pelaksanaan';
+    const impact=kind==='Risiko'?'Keparahan':'Dampak positif';
+    return <div className="heatmap">
+      <span/>{[1,2,3].map(i=><span className="axis" key={i}>{impact} {i}</span>)}
+      {[1,2,3].map(l=><div key={l} style={{display:'contents'}}>
+        <span className="axis" title={axis}>{l}</span>
+        {[1,2,3].map(i=>{
+          const count=active.filter(r=>r.kemungkinan===l && r.dampak===i).length;
+          const label=axis+' '+l+', '+impact+' '+i+' · '+iprLevel(l*i)+' · '+count+' rekaman';
+          const selected=sel('jenis').includes(kind) && sel('kemungkinan').includes(String(l)) && sel('dampak').includes(String(i));
+          return <button type="button" key={i} aria-label={label} title={label} disabled={!count} className={'heat-cell '+heatClass(l*i)+(selected?' on':'')} onClick={()=>pick({jenis:kind,metode:IPR,kemungkinan:String(l),dampak:String(i)})}>
+            <strong>{l*i}</strong><small>{count} rekaman</small></button>;
+        })}
+      </div>)}
+      <span/><span className="heat-caption">Baris menunjukkan {axis.toLowerCase()} · skor 1–9</span>
+    </div>;
   }
 
   if (cfg.type === 'powerInterest') {

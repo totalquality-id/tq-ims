@@ -27,7 +27,7 @@ function health(get) {
   const isu = get('pestel');
   const okKpi = count(kpi, (k) => k.status === 'Tercapai');
   const kompeten = pct(count(emp, (e) => e.status === 'Kompeten'), emp.length, 0);
-  const extreme = count(risks, (r) => r.level === 'Extreme');
+  const high = count(risks, r => r.metode==='IPR 3×3' && r.level==='High');
   const expired = count(docs, (d) => d.status === 'Kadaluarsa');
   const late = count(fnd, (f) => f.terlambat === 'Ya' && f.status !== 'Tertutup');
   const overdue = count(capa, (c) => c.status === 'Overdue');
@@ -35,7 +35,7 @@ function health(get) {
   return {
     pestel: { metric: `${prioritas} isu prioritas`, ok: prioritas <= 10 },
     executive: { metric: `${okKpi}/${kpi.length} KPI tercapai`, ok: okKpi / kpi.length >= 0.55 },
-    risk: { metric: `${extreme} risiko extreme`, ok: extreme <= 2 },
+    risk: { metric: `${high} risiko High IPR`, ok: high <= 2 },
     skill: { metric: `${kompeten}% karyawan kompeten`, ok: kompeten >= 75 },
     edoc: { metric: `${expired} dokumen kadaluarsa`, ok: expired <= 3 },
     audit: { metric: `${late} temuan lewat deadline`, ok: late <= 5 },
@@ -62,8 +62,8 @@ function tasks(get) {
   for (const c of get('certifications').filter((x) => x.status === 'Akan Kadaluarsa')) {
     list.push({ group: 'SDM', module: 'skill', title: `Sertifikat ${c.karyawan} akan kadaluarsa`, detail: c.sertifikasi, when: c.kadaluarsa, score: c.sisaHari, href: drillHref('certifications', { id: c.id }, { open: c.id }) });
   }
-  for (const r of get('risks').filter((x) => x.level === 'Extreme' && x.status !== 'Closed')) {
-    list.push({ group: 'Risiko', module: 'risk', title: 'Risiko extreme perlu mitigasi', detail: r.deskripsi, when: r.target, score: due(r.target), href: drillHref('risks', { id: r.id }, { open: r.id }) });
+  for (const r of get('risks').filter((x) => x.jenis==='Risiko' && x.metode==='IPR 3×3' && x.level==='High' && x.status!=='Closed')) {
+    list.push({ group: 'Risiko', module: 'risk', title: 'Risiko High perlu mitigasi', detail: r.deskripsi, when: r.target, score: due(r.target), href: drillHref('risks', { id: r.id }, { open: r.id }) });
   }
   for (const k of get('okr').filter((x) => ['At Risk', 'Belum Tercapai'].includes(x.status))) {
     list.push({ group: 'Risiko', module: 'risk', title: `Key result ${k.status.toLowerCase()}`, detail: k.keyResult, when: k.updateTerakhir, score: 30, href: drillHref('okr', { id: k.id }, { open: k.id }) });
@@ -75,7 +75,7 @@ const QUICK = [
   ['capa', 'CAPA baru'],
   ['findings', 'Catat temuan'],
   ['feedback', 'Input feedback'],
-  ['risks', 'Tambah risiko'],
+  ['risks', 'Tambah risiko atau peluang'],
   ['documents', 'Tambah dokumen'],
   ['kpi-monthly', 'Input realisasi KPI'],
 ];
@@ -140,6 +140,9 @@ export default function ImsOverview() {
           <div className="stack">
             <Card title="Input cepat">
               <div className="quick-grid">
+                <Link href="/fitur/analisis" className="btn btn-soft btn-sm">Analisis mutu</Link>
+                <Link href="/fitur/rapat" className="btn btn-soft btn-sm">Tinjauan manajemen</Link>
+                <Link href="/fitur/integrasi" className="btn btn-soft btn-sm">Integrasi & layanan</Link>
                 {QUICK.map(([k, label]) => (
                   <Link key={k} href={`${drillHref(k)}?new=1`} className="btn btn-outline btn-sm"><Plus />{label}</Link>
                 ))}

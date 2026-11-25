@@ -29,9 +29,11 @@ function load() {
   });
 }
 
-function commit(next) {
+function commit(next, requirePersistence = false) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {
+    if (requirePersistence) throw Error('Penyimpanan browser tidak tersedia atau penuh. Unduh arsip yang diperlukan dan coba dengan lampiran lebih kecil.');
+  }
   state = next;
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* kuota penuh atau mode privat */ }
   listeners.forEach((l) => l());
 }
 
@@ -71,6 +73,12 @@ export function combine(key, st) {
       .map((r) => (s.edits[r.id] ? { ...r, ...s.edits[r.id], _local: 'edited' } : r));
     rows = [...s.added.map((r) => ({ ...r, _local: 'new' })), ...rows];
   }
+  if (key === 'risks' && s) {
+    rows = rows.map(r=>{
+      const saved = r._local === 'new' ? r : s.edits[r.id];
+      return saved && !saved.metode && 'skor' in saved ? {...r, metode:'Skala lama 5×5'} : r;
+    });
+  }
   cache.set(key, { s, base: ds.rows, rows });
   return rows;
 }
@@ -101,13 +109,13 @@ export const dataActions = {
     const s = slice(key);
     commit({ ...state, [key]: { ...s, added: [clean(row), ...s.added] } });
   },
-  update(key, id, patch) {
+  update(key, id, patch, requirePersistence = false) {
     const s = slice(key);
     const p = clean(patch);
     if (s.added.some((r) => r.id === id)) {
-      commit({ ...state, [key]: { ...s, added: s.added.map((r) => (r.id === id ? { ...r, ...p } : r)) } });
+      commit({ ...state, [key]: { ...s, added: s.added.map((r) => (r.id === id ? { ...r, ...p } : r)) } }, requirePersistence);
     } else {
-      commit({ ...state, [key]: { ...s, edits: { ...s.edits, [id]: { ...(s.edits[id] ?? {}), ...p } } } });
+      commit({ ...state, [key]: { ...s, edits: { ...s.edits, [id]: { ...(s.edits[id] ?? {}), ...p } } } }, requirePersistence);
     }
   },
   remove(key, id) {

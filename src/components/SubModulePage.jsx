@@ -14,6 +14,7 @@ import FilterPanel from './FilterPanel';
 import { ChartCard, ownFields } from './ChartPanel';
 import { Breadcrumb, Card, CellValue, isNumericCol } from './ui';
 import { DATASETS, applyFilters, applyRanges, drillHref, fieldLabel, nounOf, parseFilters } from '@/lib/datasets';
+import { IPR, guidance, linkTargets } from '@/lib/ipr';
 import { SUBMODULES } from '@/lib/submodules';
 import { moduleById } from '@/lib/modules';
 import { combine, dataActions, localCount, useStore } from '@/lib/store';
@@ -64,6 +65,7 @@ export default function SubModulePage({ datasetKey }) {
   const [showCols, setShowCols] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [adding, setAdding] = useState(params.get('new') === '1');
+  const [newKind,setNewKind]=useState(params.get('jenis')==='Peluang'?'Peluang':'Risiko');
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -160,7 +162,10 @@ export default function SubModulePage({ datasetKey }) {
 
   const save = (row) => {
     dataActions.add(datasetKey, row);
-    closeForm();
+    if(datasetKey==='risks') {
+      setAdding(false);
+      setParams(n=>{n.delete('new');n.set('open',row.id);if(n.has('jenis')) n.set('jenis',row.jenis);});
+    } else closeForm();
     setToast(`${row.id} berhasil ditambahkan`);
   };
   const saveEdit = (row) => {
@@ -217,12 +222,17 @@ export default function SubModulePage({ datasetKey }) {
               <RotateCcw />Reset ({changes})
             </button>
           ))}
-          {canEdit && <button type="button" className="btn btn-primary btn-sm" onClick={() => setAdding(true)} disabled={adding}><Plus />Tambah {nounOf(ds)}</button>}
+          {datasetKey==='risks' && ['Risiko','Peluang'].map(kind=><button key={kind} type="button" className={'btn btn-sm '+(kind==='Risiko'?'btn-outline':'btn-primary')} disabled={adding} onClick={()=>{setNewKind(kind);setAdding(true);}}><Plus/>Tambah {kind.toLowerCase()}</button>)}
+          {canEdit && datasetKey!=='risks' && <button type="button" className="btn btn-primary btn-sm" onClick={() => setAdding(true)} disabled={adding}><Plus />Tambah {nounOf(ds)}</button>}
         </div>
       </div>
       <ModuleTabs moduleId={mod.id} current={datasetKey} />
 
       <div className="stack">
+        {datasetKey==='risks' && <div className="page-header-actions" role="group" aria-label="Jenis register">{['Semua','Risiko','Peluang'].map(kind=>{
+          const current=kind==='Semua'?!cat.jenis?.length:cat.jenis?.length===1 && cat.jenis[0]===kind;
+          return <button key={kind} className={'btn btn-sm '+(current?'btn-soft':'btn-outline')} type="button" aria-pressed={current} onClick={()=>setCat('jenis',kind==='Semua'?[]:[kind])}>{kind}</button>;
+        })}</div>}
         <div className="kpi-grid">
           {summary.map((s) => (
             <div key={s.label} className="kpi-card">
@@ -242,8 +252,8 @@ export default function SubModulePage({ datasetKey }) {
 
         {adding && (
           <div ref={formRef} style={{ scrollMarginTop: 80 }}>
-          <Card title={`Tambah ${nounOf(ds)}`} actions={<button type="button" className="icon-btn" onClick={closeForm} aria-label="Tutup form"><X size={18} /></button>}>
-            <RecordForm datasetKey={datasetKey} get={get} onSubmit={save} onCancel={closeForm} submitLabel="Simpan" />
+          <Card title={`Tambah ${datasetKey==='risks'?newKind.toLowerCase():nounOf(ds)}`} actions={<button type="button" className="icon-btn" onClick={closeForm} aria-label="Tutup form"><X size={18} /></button>}>
+            <RecordForm datasetKey={datasetKey} initialType={newKind} get={get} onSubmit={save} onCancel={closeForm} submitLabel="Simpan" />
           </Card>
           </div>
         )}
@@ -387,7 +397,19 @@ function RecordDrawer({ ds, datasetKey, row, get, canEdit, editing, setEditing, 
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
   const fields = [...ds.columns.filter((c) => c.key !== ds.titleKey), ...(ds.extra ?? [])].filter((c, i, arr) => arr.findIndex((x) => x.key === c.key) === i);
-  const related = ds.related?.(row) ?? [];
+  const related = [...(ds.related?.(row) ?? [])];
+  const missing=[];
+  for (const ref of row.actionRefs || []) {
+    const [target,id]=ref.split('/');
+    const item=linkTargets.includes(target) && get(target).find(r=>r.id===id);
+    if(item) related.push({label:'Tindakan · '+id+' · '+item[DATASETS[target].titleKey],dataset:target,filters:{id},open:id});
+    else missing.push(ref);
+  }
+  if(linkTargets.includes(datasetKey)){
+    for(const r of get('risks').filter(r=>r.actionRefs?.includes(datasetKey+'/'+row.id))){
+      related.push({label:r.jenis+' · '+r.id+' · '+r.deskripsi,dataset:'risks',filters:{id:r.id},open:r.id});
+    }
+  }
   return (
     <>
       <div className="drawer-overlay" onClick={onClose} />
@@ -404,14 +426,17 @@ function RecordDrawer({ ds, datasetKey, row, get, canEdit, editing, setEditing, 
             <RecordForm datasetKey={datasetKey} row={row} get={get} onSubmit={onSave} onCancel={() => setEditing(false)} submitLabel="Simpan perubahan" />
           ) : (
             <>
+              {datasetKey==='risks' && <section className="ipr-preview"><strong>{row.metode} · {row.kemungkinan} × {row.dampak} = {row.skor} · {row.level}</strong>
+                <p>{row.metode===IPR?guidance(row.jenis,row.level):'Gunakan Ubah untuk menilai ulang dengan kriteria IPR 3×3.'}</p></section>}
               <dl className="detail-grid">
-                {fields.map((c) => (
+                {fields.filter(c=>c.key!=='actionRefs' && !(datasetKey==='risks' && row.jenis==='Peluang' && c.key.startsWith('residual'))).map((c) => (
                   <div key={c.key} className={c.full || c.type === 'skills' ? 'full' : ''}>
-                    <dt>{c.label}</dt>
+                    <dt>{datasetKey==='risks'?({akibat:row.jenis==='Risiko'?'Akibat terhadap proses atau pelanggan':'Manfaat yang diharapkan',dampak:row.jenis==='Risiko'?'Keparahan dampak':'Dampak positif',pengendalian:row.jenis==='Risiko'?'Tindakan pengendalian atau mitigasi':'Tindakan untuk merealisasikan peluang'}[c.key] || c.label):c.label}</dt>
                     <dd><CellValue col={c.type === 'title' ? { ...c, type: 'text' } : c} row={row} /></dd>
                   </div>
                 ))}
               </dl>
+              {missing.map(ref=><p className="muted" key={ref}>Rekaman {ref} sudah tidak tersedia.</p>)}
               {related.length > 0 && (
                 <>
                   <div className="section-label">Data terkait</div>

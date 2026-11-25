@@ -18,6 +18,8 @@ Studi kasus fiktif **PT Sinar Busana Nusantara** (pabrik garmen ekspor). Semua d
 
 Halaman `/` adalah hub "ISO 9001:2026 Digital System" (wireframe PDF main): satu kotak per sistem.
 
+Panduan fitur dan skenario uji Basic, Advanced, serta Custom tersedia di [Panduan peninjauan TQ IMS](public/panduan-fitur-tq-ims.md). Mulai dari **Paket & Harga → Coba fitur**.
+
 ## Struktur halaman
 
 - `/` : hub, satu kotak per sistem.

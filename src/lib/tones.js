@@ -5,7 +5,7 @@ const TONES = {
     'Low', 'Rendah', 'Ditandatangani', 'Membaik', 'Terealisasi', 'Ya', 'Baik', 'Sangat Baik',
   ],
   warning: [
-    'On Progress', 'Dalam Proses', 'Review', 'Perlu Perhatian', 'Perlu Pengembangan', 'Minor', 'At Risk', 'Medium',
+    'On Progress', 'Dalam Proses', 'Review', 'Perlu Perhatian', 'Perlu Pengembangan', 'Minor', 'At Risk', 'Medium', 'Moderate',
     'Sedang', 'Akan Kadaluarsa', 'Belum Dibaca', 'Revisi', 'Netral', 'Saran', 'Menunggu Persetujuan', 'Berjalan',
     'Mitigasi', 'Perlu Tindak Lanjut', 'Cukup', 'Approval',
   ],

@@ -45,7 +45,7 @@ export const OVERVIEWS = {
       const okr = get('okr');
       return [
         { label: 'Risiko aktif', value: active.length, icon: ShieldAlert, href: drillHref('risks', { jenis: 'Risiko', status: ['Open', 'Mitigasi', 'Monitoring'] }) },
-        { label: 'Extreme & High', value: count(active, (x) => ['Extreme', 'High'].includes(x.level)), icon: Flame, tone: 'red', href: drillHref('risks', { jenis: 'Risiko', level: ['Extreme', 'High'] }) },
+        { label: 'Risiko High IPR', value: count(active, (x) => x.metode==='IPR 3×3' && x.level==='High'), icon: Flame, tone: 'red', href: drillHref('risks', { jenis:'Risiko', metode:'IPR 3×3',level:'High',status:['Open','Mitigasi','Monitoring'] }) },
         { label: 'Peluang', value: count(r, (x) => x.jenis === 'Peluang'), icon: Lightbulb, href: drillHref('risks', { jenis: 'Peluang' }) },
         { label: 'Progres OKR', value: `${Math.round(avgBy(okr, (x) => Math.min(100, x.progress)))}%`, icon: Crosshair, href: drillHref('okr') },
       ];
