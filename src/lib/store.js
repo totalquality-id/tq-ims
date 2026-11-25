@@ -4,6 +4,7 @@
 // yang disimpan di localStorage browser ini. Tidak ada yang dikirim ke server.
 // Per dataset disimpan { added: [], edits: { id: patch }, deleted: [id] }.
 import { useSyncExternalStore } from 'react';
+import { removeLocalPdf } from './local-pdf';
 import { DATASETS } from './datasets';
 
 const STORAGE_KEY = 'tq-ims:data:v1';
@@ -104,6 +105,15 @@ const clean = (row) => {
   return rest;
 };
 
+function discardDocumentFiles(rows) {
+  const keys=new Set();
+  for(const doc of rows) {
+    const files=[doc.file,...(doc.versions || []).flatMap(v=>[v.file,v.baseFile])];
+    for(const file of files) if(file?.storage==='browser')keys.add(file.key);
+  }
+  for(const key of keys)removeLocalPdf({storage:'browser',key}).catch(()=>{});
+}
+
 export const dataActions = {
   add(key, row, requirePersistence = false) {
     const s = slice(key);
@@ -119,6 +129,7 @@ export const dataActions = {
     }
   },
   remove(key, id) {
+    const documents=key==='documents'?combine(key,state).filter(r=>r.id===id):[];
     const s = slice(key);
     if (s.added.some((r) => r.id === id)) {
       commit({ ...state, [key]: { ...s, added: s.added.filter((r) => r.id !== id) } });
@@ -126,10 +137,12 @@ export const dataActions = {
       const { [id]: _, ...edits } = s.edits;
       commit({ ...state, [key]: { ...s, edits, deleted: [...s.deleted, id] } });
     }
+    discardDocumentFiles(documents);
   },
   reset(key) {
-    if (!key) return commit(EMPTY);
-    const { [key]: _, ...rest } = state;
-    commit(rest);
+    const documents=!key || key==='documents'?combine('documents',state):[];
+    const { [key]: _, ...rest }=state;
+    commit(key?rest:EMPTY);
+    discardDocumentFiles(documents);
   },
 };

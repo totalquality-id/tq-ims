@@ -3,7 +3,8 @@
 import Operations from './Operations';
 import { useSearchParams } from 'next/navigation';
 import { PdfViewer } from '@/components/DocumentFiles';
-import { currentFile, uploadPdf } from '@/lib/edoc';
+import { saveLocalPdf, removeLocalPdf } from '@/lib/local-pdf';
+import { currentFile } from '@/lib/edoc';
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { Card, Badge } from '@/components/ui';
@@ -23,11 +24,11 @@ function Revisions() {
   async function submit(v,data) {
     const original=currentFile(doc),uploaded=data.get('pdf');
     if(original && !uploaded?.size) throw Error('Pilih PDF revisi agar versi yang diajukan dapat diperiksa.');
-    const file=uploaded?.size?await uploadPdf(uploaded):null;
+    const file=uploaded?.size?await saveLocalPdf(uploaded):null;
     const route=sites.find(s=>s.id===v.site);
     const next=Number(String(doc.revisi).match(/\d+$/)?.[0] || 0)+1;
-    save([{version:'Rev. '+String(next).padStart(2,'0'),base:doc.revisi,baseFile:original,file,summary:v.summary,content:v.content,person:v.person,
-      site:route?.name || 'Pusat', steps:route?.steps || ['Pemilik proses'],log:[],status:'Menunggu',at:dateNow()},...history]);
+    try {save([{version:'Rev. '+String(next).padStart(2,'0'),base:doc.revisi,baseFile:original,file,summary:v.summary,content:v.content,person:v.person,
+      site:route?.name || 'Pusat', steps:route?.steps || ['Pemilik proses'],log:[],status:'Menunggu',at:dateNow()},...history]);}catch(error){await removeLocalPdf(file)?.catch(()=>{});throw error;}
     return 'Revisi diajukan untuk ditinjau.';
   }
   function decide(v) {

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FileText, Download, ArrowUpRight } from 'lucide-react';
 import { currentFile, fileHref, sampleRevisions } from '@/lib/edoc';
+import { readLocalPdf } from '@/lib/local-pdf';
 import { drillHref } from '@/lib/datasets';
 
 export function DocumentShelf({docs}) {
@@ -18,11 +19,25 @@ export function DocumentShelf({docs}) {
   </section>;
 }
 export function PdfViewer({file,label='Pratinjau PDF'}) {
-  const href=fileHref(file);
+  const [result,setResult]=useState(null);
+  const local=file.storage==='browser';
+  useEffect(()=>{
+    if(!local)return;
+    let active=true,url;
+    readLocalPdf(file.key).then(blob=>{
+      if(active){url=URL.createObjectURL(blob);setResult({key:file.key,url});}
+    }).catch(()=>{if(active)setResult({key:file.key,error:'Berkas tidak tersedia di browser ini. Periksa penyimpanan situs.'});});
+    return ()=>{active=false;if(url)URL.revokeObjectURL(url);};
+  },[local,file.key]);
+  const current=result?.key===file.key?result:null;
+  const href=local?current?.url:fileHref(file);
+  if(!href)return <p role="status" className="muted">{current?.error || 'Memuat PDF…'}</p>;
   return <div className="edoc-reader"><div className="edoc-tools"><strong><FileText size={16}/>{label}</strong><div>
     <a href={href} target="_blank" rel="noreferrer" className="btn-ghost"><ArrowUpRight size={15}/>Buka PDF</a>
-    <a href={fileHref(file,true)} download={file.name} className="btn-ghost"><Download size={15}/>Unduh</a></div></div>
-    <iframe title={label+' · '+file.name} src={href+'#view=FitH'} /><small>{file.name}</small></div>;
+    <a href={local?href:fileHref(file,true)} download={file.name} className="btn-ghost"><Download size={15}/>Unduh</a></div></div>
+    <object className="edoc-pdf" aria-label={label+' · '+file.name} type="application/pdf" data={href+'#view=FitH'}>
+      {Object.hasOwn(sampleRevisions,file.key)?<a href={href} target="_blank" rel="noreferrer" aria-label={'Buka '+file.name}><span role="img" aria-label={file.name} className="edoc-page-fallback" style={{backgroundImage:'url(/edoc/'+file.key+'.png)'}}/></a>:<a href={href} target="_blank" rel="noreferrer" className="btn btn-outline">Buka PDF di tab baru</a>}
+    </object><small>{file.name}</small></div>;
 }
 export function DocumentReader({doc}) {
   const active=currentFile(doc), versions=doc.versions || [],files=[];

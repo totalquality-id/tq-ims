@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import AppShell from './AppShell';
 import ModuleTabs from './ModuleTabs';
-import DocumentAccess from './DocumentAccess';
 import { DocumentReader, DocumentShelf } from './DocumentFiles';
 import RecordForm from './RecordForm';
 import FilterPanel from './FilterPanel';
@@ -231,7 +230,6 @@ export default function SubModulePage({ datasetKey }) {
       <ModuleTabs moduleId={mod.id} current={datasetKey} />
 
       <div className="stack">
-        {datasetKey==='documents' && <DocumentAccess/>}
         {datasetKey==='documents' && !adding && <DocumentShelf docs={filtered}/>}
         {datasetKey==='risks' && <div className="page-header-actions" role="group" aria-label="Jenis register">{['Semua','Risiko','Peluang'].map(kind=>{
           const current=kind==='Semua'?!cat.jenis?.length:cat.jenis?.length===1 && cat.jenis[0]===kind;

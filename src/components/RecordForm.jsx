@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { ActionLinks, ScorePreview, assessmentFields } from './RiskAssessment';
 import { IPR, statusByType } from '@/lib/ipr';
-import { currentFile, uploadPdf } from '@/lib/edoc';
+import { saveLocalPdf, removeLocalPdf } from '@/lib/local-pdf';
+import { currentFile } from '@/lib/edoc';
 import { FORMS, initialValues } from '@/lib/forms';
 
 // Form tambah / ubah data. Nilai disimpan sebagai teks lalu dibangun menjadi
@@ -42,18 +43,19 @@ export default function RecordForm({ datasetKey, row, initialType, get, onSubmit
     if(ipr && values.jenis==='Risiko' && !!values.residualKemungkinan!==!!values.residualDampak) next.residualDampak='Lengkapi kedua nilai residual atau kosongkan keduanya.';
     setErrors(next);
     if (Object.keys(next).length) return;
+    let stored;
     try {
       setSaving(true);
       const record=form.build(values,{get,existing:row});
-      if(pdf){record.file=await uploadPdf(pdf);record.format='PDF';}
+      if(pdf){stored=await saveLocalPdf(pdf);record.file=stored;record.format='PDF';}
       await onSubmit(record);
-    } catch(error){setErrors({save:error.message});}finally{setSaving(false);}
+    } catch(error){await removeLocalPdf(stored)?.catch(()=>{});setErrors({save:error.message});}finally{setSaving(false);}
   };
 
   return (
     <form className="record-form" onSubmit={submit} noValidate>
       <div className="form-grid">
-        {datasetKey==='documents' && !controlled && <label className="edoc-upload span-full"><strong>Berkas dokumen</strong><span>PDF hingga 10 MB · Supabase Storage</span>
+        {datasetKey==='documents' && !controlled && <label className="edoc-upload span-full"><strong>Berkas dokumen</strong><span>PDF hingga 10 MB · Tersimpan di browser ini</span>
           <input type="file" accept="application/pdf,.pdf" aria-label="Berkas dokumen PDF" onChange={e=>setPdf(e.target.files[0] || null)}/></label>}
         {controlled && <p className="ipr-preview span-full">Untuk mengganti PDF, ajukan versi baru melalui Kelola revisi dan persetujuan.</p>}
         {ipr && row && row.metode!==IPR && <p className="ipr-preview span-full">Skor lama {row.skor} ({row.level}) menggunakan skala 5×5. Pilih nilai baru untuk menyimpan penilaian IPR 3×3.</p>}
