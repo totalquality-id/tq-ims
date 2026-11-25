@@ -80,7 +80,7 @@ const QUICK = [
   ['kpi-monthly', 'Input realisasi KPI'],
 ];
 
-export default function ImsOverview() {
+export default function DisoOverview() {
   const router = useRouter();
   const st = useStore();
   const get = (k) => combine(k, st);
@@ -92,18 +92,18 @@ export default function ImsOverview() {
   const shown = (group === 'Semua' ? all : all.filter((t) => t.group === group));
 
   return (
-    <AppShell moduleId="ims" title="IMS 360°">
-      <Breadcrumb items={[{ label: 'Semua Sistem', href: '/' }, { label: 'IMS 360°' }]} />
+    <AppShell moduleId="d-iso" title="D-ISO 360°">
+      <Breadcrumb items={[{ label: 'Semua Sistem', href: '/' }, { label: 'D-ISO 360°' }]} />
       <div className="page-title-row">
         <div>
           <div className="page-eyebrow">Klausul 4-10</div>
-          <h1>IMS 360° Integrated Management System</h1>
+          <h1>D-ISO 360°</h1>
         </div>
       </div>
 
       <div className="stack">
         <div className="health-grid">
-          {MODULES.filter((m) => m.id !== 'ims').map((m) => (
+          {MODULES.filter((m) => m.id !== 'd-iso').map((m) => (
             <Link key={m.id} href={`/${m.id}`} className="health-card">
               <span className="health-top">
                 <span className="health-icon"><m.icon aria-hidden /></span>

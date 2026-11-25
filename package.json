@@ -2,7 +2,7 @@
   "name": "dashboard-iso9001",
   "version": "0.1.0",
   "private": true,
-  "description": "ISO 9001:2026 Digital System — dashboard referensi Total Quality Indonesia (data dummy)",
+  "description": "D-ISO — dashboard referensi Total Quality Indonesia (data dummy)",
   "type": "module",
   "scripts": {
     "dev": "next dev",

@@ -10,7 +10,7 @@ export async function POST(req) {
     const res=await fetch(process.env.TQ_EDOC_SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:process.env.TQ_EDOC_STORAGE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password}),cache:'no-store'});
     if(!res.ok)return NextResponse.json({error:'Masuk gagal. Periksa akun Supabase Anda.'},{status:401});
     const data=await res.json();
-    if(data.user?.app_metadata?.tq_ims_edoc!==true)return NextResponse.json({error:'Akun belum diberi akses E-Document TQ IMS.'},{status:403});
+    if(data.user?.app_metadata?.tq_ims_edoc!==true)return NextResponse.json({error:'Akun belum diberi akses E-Document D-ISO.'},{status:403});
     const out=NextResponse.json({ok:true},{headers:{'Cache-Control':'no-store'}});
     out.cookies.set('tq_edoc_auth',data.access_token,{httpOnly:true,secure:true,sameSite:'strict',path:'/api/edoc',maxAge:data.expires_in});return out;
   }catch{return NextResponse.json({error:'Sesi Supabase belum dapat dibuka.'},{status:503});}

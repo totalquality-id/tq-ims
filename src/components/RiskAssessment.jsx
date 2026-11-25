@@ -29,7 +29,7 @@ export function ScorePreview({values}) {
 export function ActionLinks({refs,onChange,get}) {
   const [dataset,choose]=useState('okr'),[id,select]=useState('');
   const catalog=DATASETS[dataset], key=dataset+'/'+id;
-  return <fieldset className="ipr-links span-full"><legend className="form-label">Rekaman IMS untuk tindak lanjut</legend>
+  return <fieldset className="ipr-links span-full"><legend className="form-label">Rekaman D-ISO untuk tindak lanjut</legend>
     <div className="form-grid"><label className="form-group"><span className="form-label">Register tujuan</span><select aria-label="Register tujuan" className="form-select" value={dataset} onChange={e=>{choose(e.target.value);select('');}}>{linkTargets.map(k=><option value={k} key={k}>{DATASETS[k].title}</option>)}</select></label>
     <label className="form-group"><span className="form-label">Rekaman tujuan</span><select className="form-select" aria-label="Rekaman tujuan" value={id} onChange={e=>select(e.target.value)}><option value="">Pilih rekaman</option>{get(dataset).map(r=><option key={r.id} value={r.id}>{r.id} · {r[catalog.titleKey]}</option>)}</select></label></div>
     <button className="btn btn-soft btn-sm" type="button" disabled={!id || refs.includes(key)} onClick={()=>{onChange([...refs,key]);select('');}}>Tautkan rekaman</button>

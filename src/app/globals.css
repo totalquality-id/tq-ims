@@ -1031,7 +1031,7 @@ a.feed-item:hover, button.feed-item:hover { background: var(--brand-25); }
 .hub-tile:hover h3, .hub-tile:focus-visible h3 { color: var(--white); }
 .hub-foot { padding: 16px 28px; font-size: 12.5px; color: rgb(255 255 255 / 0.7); text-align: center; }
 
-/* Peta proses (IMS 360): satu warna merek, makin terang ke kanan. */
+/* Peta proses (D-ISO 360): satu warna merek, makin terang ke kanan. */
 .process-map { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .process-step {
   position: relative;
@@ -1131,7 +1131,7 @@ a.feed-item:hover, button.feed-item:hover { background: var(--brand-25); }
 .sub-add:hover { background: var(--brand-50); }
 .sub-add svg { width: 18px; height: 18px; }
 
-/* IMS 360 */
+/* D-ISO 360 */
 .health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 .health-card { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); color: inherit; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); }
 .health-card:hover { border-color: var(--brand-300); box-shadow: var(--shadow-sm); }

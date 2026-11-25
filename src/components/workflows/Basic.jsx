@@ -106,9 +106,9 @@ function Tasks() {
   const rows=all.filter(t=>!owner || t.owner===owner);
   return <Card title="Agenda & pengingat" subtitle="Tenggat hingga 7 hari ke depan, sertifikasi hingga 90 hari, serta pekerjaan yang sudah lewat tenggat.">
     <div className="work-fields"><Field label="Tanggal acuan" type="date" value={cutoff} onChange={e=>setCutoff(e.target.value || TODAY)}/><Field label="Penanggung jawab" value={owner} onChange={e=>setOwner(e.target.value)} choices={[['','Semua PIC'],...[...new Set(all.map(t=>t.owner).filter(Boolean).concat(owner || []))].sort()]}/></div>
-    <div className="work-actions"><strong>{rows.length} tugas</strong><button className="btn btn-soft" disabled={!owner || !rows.length} onClick={()=>download('Pengingat.eml','X-Unsent: 1\r\nSubject: Pengingat tugas TQ IMS\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\nYth. '+owner+',\r\n'+rows.map(t=>t.due+' | '+t.id+' | '+t.title).join('\r\n'),'message/rfc822')}>Unduh draf email PIC</button></div>
+    <div className="work-actions"><strong>{rows.length} tugas</strong><button className="btn btn-soft" disabled={!owner || !rows.length} onClick={()=>download('Pengingat.eml','X-Unsent: 1\r\nSubject: Pengingat tugas D-ISO\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\nYth. '+owner+',\r\n'+rows.map(t=>t.due+' | '+t.id+' | '+t.title).join('\r\n'),'message/rfc822')}>Unduh draf email PIC</button></div>
     <Table columns={['Tenggat','PIC','Tugas','Sumber']} rows={rows.map(t=>[fmtDate(t.due),t.owner,t.title,<RecordLink key={t.id} dataset={t.key} id={t.id}/>])}/>
-    <div className="work-actions"><Link href="/ims">Lihat prioritas di IMS 360°</Link><Link href="/fitur/integrasi#dukungan">Onboarding & dukungan</Link></div>
+    <div className="work-actions"><Link href="/d-iso">Lihat prioritas di D-ISO 360°</Link><Link href="/fitur/integrasi#dukungan">Onboarding & dukungan</Link></div>
   </Card>;
 }
 export default function Basic({fitur}) { if(fitur==='revisi') return <Suspense fallback={<p>Memuat dokumen…</p>}><Revisions/></Suspense>; if(fitur==='bukti') return <><Evidence/><Operations/></>; return <Tasks/>; }

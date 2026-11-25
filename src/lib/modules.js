@@ -1,4 +1,4 @@
-// Delapan sistem pada wireframe "ISO 9001:2026 Digital System", diurutkan
+// Delapan sistem pada wireframe "D-ISO", diurutkan
 // mengikuti alur klausul ISO 9001 dari konteks sampai peningkatan.
 import { Globe2, Gauge, ShieldAlert, GraduationCap, FolderOpen, ClipboardCheck, Wrench, Orbit } from 'lucide-react';
 
@@ -95,11 +95,11 @@ export const MODULES = [
     datasets: ['capa'],
   },
   {
-    id: 'ims',
+    id: 'd-iso',
     icon: Orbit,
     letter: 'H',
-    name: 'IMS 360° Integrated Management System',
-    short: 'IMS 360°',
+    name: 'D-ISO 360°',
+    short: 'D-ISO 360°',
     clause: 'Klausul 4-10',
     clauseDetail: 'Integrasi seluruh modul: satu data, satu sistem, satu tujuan',
     tagline: 'Quality, Risk, People, Process, Performance',

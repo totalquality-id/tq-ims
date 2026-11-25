@@ -53,7 +53,7 @@ export async function GET(req){
 export async function POST(req){
   const cfg=config();
   if(!cfg || !process.env.TQ_EDOC_COOKIE_SECRET)return json('Konfigurasi Supabase Storage belum tersedia.',503);
-  // Hosted uploads require a Supabase user explicitly enrolled for TQ IMS.
+  // Hosted uploads require a Supabase user explicitly enrolled for D-ISO.
   const url=new URL(req.url),host=req.headers.get('host');
   if(!host || !['http://'+host,'https://'+host].includes(req.headers.get('origin')))return json('Asal unggahan tidak valid.',403);
   const local=process.env.TQ_EDOC_LOCAL_PREVIEW==='true' && ['localhost','127.0.0.1','[::1]'].includes(url.hostname) && /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host);

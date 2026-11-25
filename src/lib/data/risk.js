@@ -49,7 +49,7 @@ const OPPORTUNITIES = [
   ['Fasilitas KITE bahan baku impor', 'Keuangan', 'Finance', 2, 2, 'Pengajuan ke Bea Cukai'],
   ['Transisi ISO 9001:2026 sebagai nilai jual', 'Kepatuhan', 'QMR', 3, 2, 'Sertifikasi transisi sebelum Q2 2027'],
   ['Program multi-skill operator', 'SDM', 'Sewing', 3, 2, 'Matriks skill & rotasi terencana'],
-  ['Portal buyer untuk tracking order', 'Teknologi', 'IT', 2, 2, 'Prototype portal di modul IMS 360'],
+  ['Portal buyer untuk tracking order', 'Teknologi', 'IT', 2, 2, 'Prototype portal di modul D-ISO 360'],
 ];
 
 function buildRisks() {

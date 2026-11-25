@@ -264,7 +264,7 @@ export const DATASETS = {
       { key: 'pic', label: 'PIC' },
       { key: 'target', label: 'Target', type: 'date' },
       { key: 'pengendalian', label: 'Tindakan yang direncanakan', full: true },
-      { key:'actionRefs', label:'Rekaman tindakan IMS', full:true },
+      { key:'actionRefs', label:'Rekaman tindakan D-ISO', full:true },
     ],
     related: (r) => (r.ref ? [{ label: `Isu PESTEL asal (${r.ref})`, dataset: 'pestel', filters: { id: r.ref }, open: r.ref }] : []),
     summary: (rows) => [

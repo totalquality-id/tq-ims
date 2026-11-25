@@ -4,9 +4,9 @@ import './globals.css';
 const inter = Inter({ variable: '--font-inter', subsets: ['latin'], display: 'swap', axes: ['opsz'] });
 
 export const metadata = {
-  title: { default: 'ISO 9001:2026 Digital System | Total Quality', template: '%s | ISO 9001:2026 Digital System' },
+  title: { default: 'D-ISO | Total Quality', template: '%s | D-ISO' },
   description: 'Referensi dashboard dan sistem digital ISO 9001:2026 oleh Total Quality Indonesia, studi kasus fiktif dengan data dummy.',
-  applicationName: 'ISO 9001:2026 Digital System',
+  applicationName: 'D-ISO',
   robots: { index: false, follow: false },
 };
 

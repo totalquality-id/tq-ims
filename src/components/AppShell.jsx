@@ -70,8 +70,8 @@ function Sidebar({ moduleId, datasetKey, open, onClose }) {
         <Link href="/">
           <Image src="/brand/tq-logo.png" alt="Logo Total Quality" width={58} height={34} priority />
           <span className="sidebar-logo-text">
-            <span className="sidebar-logo-name">ISO 9001:2026</span>
-            <span className="sidebar-logo-sub">Digital System</span>
+            <span className="sidebar-logo-name">D-ISO</span>
+            <span className="sidebar-logo-sub">ISO 9001:2026</span>
           </span>
         </Link>
         <button type="button" className="sidebar-close" onClick={onClose} aria-label="Tutup navigasi"><X size={20} /></button>

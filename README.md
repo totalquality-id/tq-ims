@@ -1,4 +1,4 @@
-# ISO 9001:2026 Digital System
+# D-ISO
 
 Dashboard referensi Total Quality Indonesia untuk pengembangan sistem digital ISO 9001:2026.
 Studi kasus fiktif **PT Sinar Busana Nusantara** (pabrik garmen ekspor). Semua data adalah dummy.
@@ -14,11 +14,11 @@ Studi kasus fiktif **PT Sinar Busana Nusantara** (pabrik garmen ekspor). Semua d
 | FolderOpen | E-Document Management System | 7.5 | `/edoc` |
 | ClipboardCheck | E-Audit & Real-Time Feedback | 9.1.2 · 9.2 | `/audit` |
 | Wrench | CAPA Digital | 10.2 | `/capa` |
-| Orbit | IMS 360° (integrasi semua sistem) | 4–10 | `/ims` |
+| Orbit | D-ISO 360° (integrasi semua sistem) | 4–10 | `/d-iso` |
 
-Halaman `/` adalah hub "ISO 9001:2026 Digital System" (wireframe PDF main): satu kotak per sistem.
+Halaman `/` adalah hub "D-ISO" (wireframe PDF main): satu kotak per sistem.
 
-Panduan fitur dan skenario uji Basic, Advanced, serta Custom tersedia di [Panduan peninjauan TQ IMS](public/panduan-fitur-tq-ims.md). Mulai dari **Paket & Harga → Coba fitur**.
+Panduan fitur dan skenario uji Basic, Advanced, serta Custom tersedia di [Panduan peninjauan D-ISO](public/panduan-fitur-d-iso.md). Mulai dari **Paket & Harga → Coba fitur**.
 
 ## Struktur halaman
 
@@ -26,13 +26,13 @@ Panduan fitur dan skenario uji Basic, Advanced, serta Custom tersedia di [Pandua
 - `/<sistem>` : Ringkasan sistem (4 KPI, 2 grafik utama, kartu sub-modul).
 - `/<sistem>/<sub-modul>` : satu sub-modul, misalnya `/capa/capa`, `/risk/okr`, `/skill/trainings`.
   Berisi KPI, 2-3 grafik, form tambah data, dan tabel. Alamat lama `/data/<dataset>` dialihkan otomatis.
-- `/ims` : IMS 360°, status tiap sistem, daftar "Perlu tindakan", input cepat, tren KPI.
+- `/d-iso` : D-ISO 360°, status tiap sistem, daftar "Perlu tindakan", input cepat, tren KPI.
 
 ## Interaksi
 
 - **Input data (mode pratinjau)**: tombol "Tambah" di setiap sub-modul membuka form di atas tabel.
   Data juga bisa diubah dan dihapus dari panel detail. Semua perubahan disimpan di localStorage browser
-  (`tq-ims:data:v1`), tidak ke server, dan langsung memengaruhi KPI, grafik, dan IMS 360°.
+  (`tq-ims:data:v1`), tidak ke server, dan langsung memengaruhi KPI, grafik, dan D-ISO 360°.
   Tombol "Reset" mengembalikan sub-modul ke data awal.
 - **Grafik sebagai filter**: klik batang, irisan donut, sel heatmap, atau titik tren untuk memfilter tabel
   di halaman yang sama. Klik lagi untuk membatalkan. Di halaman Ringkasan, klik membuka sub-modulnya.
@@ -49,7 +49,7 @@ src/lib/submodules.js   Nama, ikon, dan grafik tiap sub-modul
 src/lib/forms.js        Field form input dan perhitungan kolom turunan
 src/lib/store.js        Penyimpanan cache browser (tambah/ubah/hapus/reset)
 src/lib/overviews.js    KPI & grafik halaman Ringkasan tiap sistem
-src/components/         AppShell, SubModulePage, ModuleOverview, ImsOverview, ChartPanel, FilterPanel, RecordForm
+src/components/         AppShell, SubModulePage, ModuleOverview, DisoOverview, ChartPanel, FilterPanel, RecordForm
 ```
 
 Untuk menyambungkan ke database, ganti `src/lib/store.js` dengan pemanggilan API dengan bentuk baris yang sama.
