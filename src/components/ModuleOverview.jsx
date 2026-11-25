@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronRight, Plus } from 'lucide-react';
 import AppShell from './AppShell';
 import ModuleTabs from './ModuleTabs';
+import { DocumentShelf } from './DocumentFiles';
 import { ChartCard } from './ChartPanel';
 import { Breadcrumb, Kpi } from './ui';
 import { moduleById } from '@/lib/modules';
@@ -33,6 +34,7 @@ export default function ModuleOverview({ moduleId }) {
       <ModuleTabs moduleId={mod.id} />
 
       <div className="stack">
+        {mod.id==='edoc' && <DocumentShelf docs={get('documents')}/>} 
         <div className="kpi-grid">
           {ov.kpis(get).map((k) => <Kpi key={k.label} {...k} />)}
         </div>

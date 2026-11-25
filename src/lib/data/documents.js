@@ -99,6 +99,7 @@ function buildDocuments() {
     }
   }
   for (const [nama, dept] of EXTERNALS) add(nama, 'Dokumen Eksternal', dept);
+  for(const doc of rows) if(doc.id==='FRM-QC-001') doc.format='PDF';
   return rows;
 }
 

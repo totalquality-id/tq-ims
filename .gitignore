@@ -2,9 +2,10 @@ node_modules
 .next
 out
 .vercel
-.env*
+.env
 *.log
 
 # File referensi desain & konfigurasi lokal
 *.pdf
+!public/edoc/*.pdf
 .claude/

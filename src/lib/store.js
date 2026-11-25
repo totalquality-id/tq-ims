@@ -105,9 +105,9 @@ const clean = (row) => {
 };
 
 export const dataActions = {
-  add(key, row) {
+  add(key, row, requirePersistence = false) {
     const s = slice(key);
-    commit({ ...state, [key]: { ...s, added: [clean(row), ...s.added] } });
+    commit({ ...state, [key]: { ...s, added: [clean(row), ...s.added] } }, requirePersistence);
   },
   update(key, id, patch, requirePersistence = false) {
     const s = slice(key);

@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import AppShell from './AppShell';
 import ModuleTabs from './ModuleTabs';
+import DocumentAccess from './DocumentAccess';
+import { DocumentReader, DocumentShelf } from './DocumentFiles';
 import RecordForm from './RecordForm';
 import FilterPanel from './FilterPanel';
 import { ChartCard, ownFields } from './ChartPanel';
@@ -161,15 +163,15 @@ export default function SubModulePage({ datasetKey }) {
   const closeForm = () => { setAdding(false); if (params.get('new')) setParams((n) => n.delete('new'), { keepPage: true }); };
 
   const save = (row) => {
-    dataActions.add(datasetKey, row);
-    if(datasetKey==='risks') {
+    dataActions.add(datasetKey, row, datasetKey==='documents');
+    if(datasetKey==='risks' || datasetKey==='documents') {
       setAdding(false);
-      setParams(n=>{n.delete('new');n.set('open',row.id);if(n.has('jenis')) n.set('jenis',row.jenis);});
+      setParams(n=>{n.delete('new');n.set('open',row.id);if(datasetKey==='risks' && n.has('jenis')) n.set('jenis',row.jenis);});
     } else closeForm();
     setToast(`${row.id} berhasil ditambahkan`);
   };
   const saveEdit = (row) => {
-    dataActions.update(datasetKey, openRow.id, row);
+    dataActions.update(datasetKey, openRow.id, row, datasetKey==='documents');
     setEditing(false);
     setToast(`${openRow.id} berhasil diperbarui`);
   };
@@ -229,6 +231,8 @@ export default function SubModulePage({ datasetKey }) {
       <ModuleTabs moduleId={mod.id} current={datasetKey} />
 
       <div className="stack">
+        {datasetKey==='documents' && <DocumentAccess/>}
+        {datasetKey==='documents' && !adding && <DocumentShelf docs={filtered}/>}
         {datasetKey==='risks' && <div className="page-header-actions" role="group" aria-label="Jenis register">{['Semua','Risiko','Peluang'].map(kind=>{
           const current=kind==='Semua'?!cat.jenis?.length:cat.jenis?.length===1 && cat.jenis[0]===kind;
           return <button key={kind} className={'btn btn-sm '+(current?'btn-soft':'btn-outline')} type="button" aria-pressed={current} onClick={()=>setCat('jenis',kind==='Semua'?[]:[kind])}>{kind}</button>;
@@ -413,7 +417,7 @@ function RecordDrawer({ ds, datasetKey, row, get, canEdit, editing, setEditing, 
   return (
     <>
       <div className="drawer-overlay" onClick={onClose} />
-      <aside className="drawer" role="dialog" aria-modal="true" aria-label={`Detail ${ds.singular}`}>
+      <aside className={'drawer'+(datasetKey==='documents'?' edoc-drawer':'')} role="dialog" aria-modal="true" aria-label={`Detail ${ds.singular}`}>
         <div className="drawer-head">
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="cell-code" style={{ marginBottom: 4 }}>{row.id}{row._local && <span className={`local-tag ${row._local}`}>{row._local === 'new' ? 'Baru' : 'Diubah'}</span>}</div>
@@ -428,6 +432,7 @@ function RecordDrawer({ ds, datasetKey, row, get, canEdit, editing, setEditing, 
             <>
               {datasetKey==='risks' && <section className="ipr-preview"><strong>{row.metode} · {row.kemungkinan} × {row.dampak} = {row.skor} · {row.level}</strong>
                 <p>{row.metode===IPR?guidance(row.jenis,row.level):'Gunakan Ubah untuk menilai ulang dengan kriteria IPR 3×3.'}</p></section>}
+              {datasetKey==='documents' && <DocumentReader key={row.id} doc={row}/>}
               <dl className="detail-grid">
                 {fields.filter(c=>c.key!=='actionRefs' && !(datasetKey==='risks' && row.jenis==='Peluang' && c.key.startsWith('residual'))).map((c) => (
                   <div key={c.key} className={c.full || c.type === 'skills' ? 'full' : ''}>

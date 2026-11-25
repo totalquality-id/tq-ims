@@ -1,7 +1,10 @@
 'use client';
 
 import Operations from './Operations';
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { PdfViewer } from '@/components/DocumentFiles';
+import { currentFile, uploadPdf } from '@/lib/edoc';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { Card, Badge } from '@/components/ui';
 import { useGet, dataActions } from '@/lib/store';
@@ -11,15 +14,19 @@ import { Field, Form, RecordLink, Table, choiceRows, dateNow, download, useLedge
 
 function Revisions() {
   const get=useGet(), docs=get('documents').filter(d=>d.status!=='Obsolete'), sites=useLedger('sites').rows;
-  const [id,select]=useState('');
+  const params=useSearchParams();
+  const [id,select]=useState(params.get('dokumen') || '');
   const doc=docs.find(d=>d.id===id) || docs[0];
   if(!doc) return <Card title="Persetujuan dokumen">Tambahkan dokumen di daftar induk.</Card>;
   const history=doc.versions || [], draft=history.find(r=>r.status==='Menunggu');
-  function save(versions,patch={}) { dataActions.update('documents',doc.id,{versions,...patch}); }
-  function submit(v) {
+  function save(versions,patch={}) { dataActions.update('documents',doc.id,{versions,...patch},true); }
+  async function submit(v,data) {
+    const original=currentFile(doc),uploaded=data.get('pdf');
+    if(original && !uploaded?.size) throw Error('Pilih PDF revisi agar versi yang diajukan dapat diperiksa.');
+    const file=uploaded?.size?await uploadPdf(uploaded):null;
     const route=sites.find(s=>s.id===v.site);
     const next=Number(String(doc.revisi).match(/\d+$/)?.[0] || 0)+1;
-    save([{version:'Rev. '+String(next).padStart(2,'0'),base:doc.revisi,summary:v.summary,content:v.content,person:v.person,
+    save([{version:'Rev. '+String(next).padStart(2,'0'),base:doc.revisi,baseFile:original,file,summary:v.summary,content:v.content,person:v.person,
       site:route?.name || 'Pusat', steps:route?.steps || ['Pemilik proses'],log:[],status:'Menunggu',at:dateNow()},...history]);
     return 'Revisi diajukan untuk ditinjau.';
   }
@@ -27,18 +34,20 @@ function Revisions() {
     if(doc.revisi!==draft.base && v.decision==='Setujui') throw Error('Versi induk sudah berubah. Kembalikan usulan lalu ajukan ulang.');
     const log=[...draft.log,{role:draft.steps[draft.log.length],person:v.person,decision:v.decision,note:v.note,at:dateNow()}];
     const status=v.decision==='Kembalikan'?'Dikembalikan':log.length===draft.steps.length?'Terbit':'Menunggu';
-    const patch=status==='Terbit'?{revisi:draft.version,status:'Aktif',tglTerbit:TODAY,bulanTerbit:TODAY.slice(0,7),tglReview:v.review,sisaHariReview:daysBetween(TODAY,v.review)}:{};
+    const patch=status==='Terbit'?{revisi:draft.version,file:draft.file || null,...(draft.file?{format:'PDF'}:{}),status:'Aktif',tglTerbit:TODAY,bulanTerbit:TODAY.slice(0,7),tglReview:v.review,sisaHariReview:daysBetween(TODAY,v.review)}:{};
     save(history.map(r=>r===draft?{...r,status,log}:r),patch);
     return status==='Terbit'?'Versi baru terbit di Master Dokumen.':status;
   }
   return <><Card title="Dokumen terkendali" actions={<RecordLink dataset="documents" id={doc.id}>Buka master</RecordLink>}>
     <Field label="Pilih dokumen" choices={choiceRows(docs,'nama')} value={doc.id} onChange={e=>select(e.target.value)}/>
     <p>Versi berlaku <strong>{doc.revisi}</strong> · {doc.pemilik} · Review berikutnya {fmtDate(doc.tglReview)}</p>
-    {history.find(r=>r.status==='Terbit' && r.version===doc.revisi) && <button className="btn btn-soft" onClick={()=>download(doc.id+'-'+doc.revisi+'.txt',history.find(r=>r.status==='Terbit' && r.version===doc.revisi).content)}>Unduh isi versi berlaku</button>}
+    {currentFile(doc) && <PdfViewer file={currentFile(doc)} label={'Versi master · '+doc.revisi}/>}
+    {!currentFile(doc) && history.find(r=>r.status==='Terbit' && r.version===doc.revisi) && <button className="btn btn-soft" onClick={()=>download(doc.id+'-'+doc.revisi+'.txt',history.find(r=>r.status==='Terbit' && r.version===doc.revisi).content)}>Unduh isi versi berlaku</button>}
   </Card><Card title={draft?'Tinjau revisi · '+draft.steps[draft.log.length]:'Ajukan revisi'}><div key={doc.id+(draft?.at || '')}>
     {draft?<><p><strong>{draft.version} · {draft.summary}</strong></p><p style={{whiteSpace:'pre-wrap'}}>{draft.content}</p>
+      {draft.file && <PdfViewer file={draft.file} label={'Usulan revisi · '+draft.version}/>}
       <Form action="Catat keputusan" onSave={decide}><Field label="Nama pemeriksa" name="person" required/><Field label="Keputusan" name="decision" choices={['Setujui','Kembalikan']}/><Field label="Catatan pemeriksaan" name="note" required/><Field label="Review berikutnya jika terbit" type="date" name="review" min={TODAY} defaultValue={addDays(TODAY,365)} required/></Form></>:
-      <Form action="Ajukan revisi" onSave={submit}><Field label="Pengusul" name="person" required/><Field label="Lokasi & alur" name="site" choices={ [['','Pusat · Pemilik proses'],...sites.map(s=>[s.id,s.name+' · '+s.steps.join(' → ')])] }/><Field label="Ringkasan perubahan" name="summary" required wide/><Field label="Isi dokumen revisi" type="textarea" name="content" required wide/></Form>}
+      <Form action="Ajukan revisi" onSave={submit}><Field label="Pengusul" name="person" required/><Field label="Lokasi & alur" name="site" choices={ [['','Pusat · Pemilik proses'],...sites.map(s=>[s.id,s.name+' · '+s.steps.join(' → ')])] }/><Field label="Ringkasan perubahan" name="summary" required wide/><Field label="Isi atau catatan revisi" type="textarea" name="content" required wide/><Field label="PDF revisi (maks. 10 MB)" type="file" name="pdf" accept=".pdf,application/pdf" required={!!currentFile(doc)} wide/></Form>}
     </div></Card><Card title="Riwayat revisi"><Table columns={['Versi','Lokasi','Perubahan','Status','Jejak pemeriksaan']} rows={history.map(r=>[r.version,r.site,r.summary,<Badge key="status" value={r.status}/>,<details key="log"><summary>{r.log.length} keputusan</summary><p>Pengusul {r.person}</p>{r.log.map((a,i)=><p key={i}>{a.at.slice(0,10)} · {a.role} · {a.person} · {a.decision} · {a.note}</p>)}<p>{r.content}</p></details>])}/></Card></>;
 }
 
@@ -102,4 +111,4 @@ function Tasks() {
     <div className="work-actions"><Link href="/ims">Lihat prioritas di IMS 360°</Link><Link href="/fitur/integrasi#dukungan">Onboarding & dukungan</Link></div>
   </Card>;
 }
-export default function Basic({fitur}) { if(fitur==='revisi') return <Revisions/>; if(fitur==='bukti') return <><Evidence/><Operations/></>; return <Tasks/>; }
+export default function Basic({fitur}) { if(fitur==='revisi') return <Suspense fallback={<p>Memuat dokumen…</p>}><Revisions/></Suspense>; if(fitur==='bukti') return <><Evidence/><Operations/></>; return <Tasks/>; }
